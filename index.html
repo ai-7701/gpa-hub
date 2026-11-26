@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GPA Ledger — your semester record</title>
+<meta name="description" content="Track semester GPA, CGPA and a target gauge. A free grade ledger for students." />
+<meta name="theme-color" content="#f4efe4" />
+<script>
+  /* set the theme before first paint so dark-mode visitors never see a white flash */
+  (function () {
+    try {
+      var t = localStorage.getItem("gpahub.theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<link rel="canonical" href="https://gpa-hub-chi.vercel.app/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPA Ledger" />
+<meta property="og:title" content="GPA Ledger — your semester record" />
+<meta property="og:description" content="Track semester GPA, CGPA and a target gauge. A free grade ledger for students." />
+<meta property="og:url" content="https://gpa-hub-chi.vercel.app/" />
+<meta name="twitter:card" content="summary" />
+<link rel="stylesheet" href="assets/styles.css?v=4" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%2314140f'/%3E%3Ctext x='50' y='70' font-size='56' font-family='Georgia' font-weight='bold' fill='%23f4efe4' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+<a class="skip" href="#semesters">Skip to the record</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">GPA</span>
+      <span class="brand-text">Ledger</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#semesters">Record</a>
+      <a href="#trend">Trend</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#planner">Gauge</a>
+      <a href="#resources">Index</a>
+    </nav>
+    <button class="switch" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Dark mode">
+      <span class="switch-track">
+        <span class="switch-knob"></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<nav class="rail" id="rail" aria-label="Page index">
+  <a href="#semesters" data-rail="semesters"><i></i><span>Record</span></a>
+  <a href="#trend" data-rail="trend"><i></i><span>Trend</span></a>
+  <a href="#calculator" data-rail="calculator"><i></i><span>Calculator</span></a>
+  <a href="#planner" data-rail="planner"><i></i><span>Gauge</span></a>
+  <a href="#scale" data-rail="scale"><i></i><span>Scale</span></a>
+  <a href="#resources" data-rail="resources"><i></i><span>Index</span></a>
+</nav>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="kicker">Academic record · PRN <span class="mono" id="heroPrn">000000000</span></p>
+        <h1 id="heroName">Sample Student</h1>
+        <p class="lede"><span id="heroProg">BTech</span>, <span id="heroSchool">School of Computing and Data Science</span>. <span id="heroUni">Your University</span>.</p>
+        <p class="hero-note">Two semesters on file, issued <strong id="heroDate">—</strong>. Every figure below is computed from the course list in the record — nothing is typed in twice.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#calculator">Open the calculator</a>
+          <button class="btn btn-ghost" id="printBtn" type="button">Print transcript</button>
+        </div>
+      </div>
+
+      <div class="seal-wrap reveal">
+        <div class="seal">
+          <svg class="seal-svg" viewBox="0 0 220 220" aria-hidden="true">
+            <defs>
+              <path id="sealArc" d="M110,110 m-88,0 a88,88 0 1,1 176,0 a88,88 0 1,1 -176,0" />
+            </defs>
+            <circle class="seal-rim" cx="110" cy="110" r="106" />
+            <circle class="seal-rim2" cx="110" cy="110" r="99" />
+            <circle class="seal-track" cx="110" cy="110" r="72" />
+            <circle class="seal-fill" id="ringFill" cx="110" cy="110" r="72" />
+            <text class="seal-text">
+              <textPath href="#sealArc" startOffset="0">SAI UNIVERSITY · SCHOOL OF COMPUTING · SEMESTER RECORD · CGPA ·</textPath>
+            </text>
+          </svg>
+          <div class="seal-center">
+            <span class="seal-value" id="cgpaValue">—</span>
+            <span class="seal-label">CGPA / 10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <dl class="ledger-strip reveal">
+        <div class="cell">
+          <dt>Credits earned</dt>
+          <dd class="mono" id="statCredits">0</dd>
+        </div>
+        <div class="cell">
+          <dt>Semesters</dt>
+          <dd class="mono" id="statSems">0</dd>
+        </div>
+        <div class="cell">
+          <dt>Percentage</dt>
+          <dd class="mono" id="statPct">—</dd>
+        </div>
+        <div class="cell">
+          <dt>Best SGPA</dt>
+          <dd class="mono" id="statBest">—</dd>
+        </div>
+        <div class="cell cell-action">
+          <button class="btn btn-quiet btn-sm" id="copyBtn" type="button">Copy CGPA</button>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ================= SEMESTERS ================= -->
+  <section class="section" id="semesters">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="index-num">01</p>
+        <h2>The record</h2>
+        <p>Weighted by credits, using the university's own SGPA formula.</p>
+      </div>
+      <div class="sem-grid" id="semGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= TREND ================= -->
+  <section class="section section-rule" id="trend">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="index-num">02</p>
+        <h2>Plotted by hand</h2>
+        <p>Semester GPA against the running CGPA. Hover or tap a point to open it.</p>
+      </div>
+      <div class="card chart-card reveal">
+        <div class="chart-legend">
+          <span class="lg"><i class="dot dot-sgpa"></i> Semester GPA</span>
+          <span class="lg"><i class="dot dot-cgpa"></i> CGPA</span>
+          <span class="lg" id="projLegend" hidden><i class="dot dot-proj"></i> Projected</span>
+          <span class="lg lg-hint">Tap a point</span>
+        </div>
+        <div class="chart-host" id="chartHost"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CALCULATOR ================= -->
+  <section class="section" id="calculator">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="index-num">03</p>
+        <h2>Work the numbers</h2>
+        <p>Add courses, set credits, pick a grade. The totals settle as you go.</p>
+      </div>
+
+      <div class="calc-layout">
+        <div class="card calc-card reveal">
+          <div class="calc-toolbar">
+            <div class="chip-row" id="presetRow">
+              <button class="chip" data-preset="blank" type="button">Blank sheet</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="addRow" type="button">
+              <span aria-hidden="true">+</span> Add course
+            </button>
+          </div>
+
+          <div class="table-scroll">
+            <table class="calc-table">
+              <thead>
+                <tr>
+                  <th class="col-name">Course</th>
+                  <th class="col-num">Credits</th>
+                  <th class="col-grade">Grade</th>
+                  <th class="col-num">Points</th>
+                  <th class="col-x"></th>
+                </tr>
+              </thead>
+              <tbody id="calcBody"></tbody>
+            </table>
+          </div>
+          <p class="hint">O 10 · A+ 9 · A 8 · B+ 7 · B 6 · C 5 · P 4 · F 0. Audit courses are not counted in SGPA — leave their credits at 0.</p>
+        </div>
+
+        <aside class="card result-card reveal">
+          <p class="result-label">Semester GPA</p>
+          <p class="result-big" id="calcSgpa">—</p>
+          <p class="result-sub"><span id="calcCredits">0</span> credits · <span id="calcPoints">0</span> grade points</p>
+
+          <div class="divider"></div>
+
+          <p class="result-label">Add it to the record</p>
+          <p class="result-mid"><span id="calcNewCgpa">—</span> <span class="muted">CGPA</span></p>
+          <p class="result-sub" id="calcDelta">Add courses to see the effect.</p>
+
+          <button class="btn btn-primary btn-block" id="toPlanner" type="button">Take it to the gauge →</button>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PLANNER / GAUGE ================= -->
+  <section class="section section-rule" id="planner">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="index-num">04</p>
+        <h2>The gauge</h2>
+        <p>Set a target and a semester size. The needle shows the SGPA you need to land it.</p>
+      </div>
+
+      <div class="gauge-layout">
+        <div class="card gauge-card reveal">
+          <div class="gauge">
+            <svg viewBox="0 0 300 190" class="gauge-svg" aria-hidden="true">
+              <path class="gauge-arc" d="M 30 165 A 120 120 0 0 1 270 165" />
+              <path class="gauge-arc-live" id="gaugeArc" d="M 30 165 A 120 120 0 0 1 270 165" />
+              <g id="gaugeTicks"></g>
+              <line class="gauge-marker" id="gaugeMarker" x1="150" y1="165" x2="150" y2="52" />
+              <g class="gauge-needle" id="gaugeNeedle">
+                <polygon points="150,58 146.5,152 153.5,152" />
+                <circle class="hub-outer" cx="150" cy="165" r="9" />
+                <circle class="hub-inner" cx="150" cy="165" r="3.2" />
+              </g>
+            </svg>
+            <p class="gauge-readout"><span id="needSgpa">—</span><span class="gauge-unit">SGPA</span></p>
+          </div>
+          <p class="result-sub center" id="needVerdict">—</p>
+        </div>
+
+        <div class="card controls-card reveal">
+          <div class="control">
+            <label for="targetCgpa">Target CGPA <output id="targetCgpaOut" class="mono">9.50</output></label>
+            <input type="range" id="targetCgpa" min="6" max="10" step="0.01" value="9.5" />
+            <div class="scale-marks"><span>6.00</span><span>8.00</span><span>10.00</span></div>
+          </div>
+
+          <div class="control">
+            <label for="targetCredits">Credits next semester <output id="targetCreditsOut" class="mono">22</output></label>
+            <input type="range" id="targetCredits" min="1" max="40" step="1" value="22" />
+            <div class="scale-marks"><span>1</span><span>20</span><span>40</span></div>
+          </div>
+
+          <div class="quick-row" id="quickTargets">
+            <button class="chip" data-target="9.00" type="button">9.00</button>
+            <button class="chip" data-target="9.25" type="button">9.25</button>
+            <button class="chip" data-target="9.50" type="button">9.50</button>
+            <button class="chip" data-target="9.75" type="button">9.75</button>
+          </div>
+
+          <div class="divider"></div>
+          <p class="result-label">Best possible</p>
+          <p class="result-mid" id="bestCgpa">—</p>
+          <p class="result-sub">With a perfect 10.00 next semester. <span id="plannerBase">40 credits · 372 points</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SCALE ================= -->
+  <section class="section" id="scale">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="index-num">05</p>
+        <h2>Grading key</h2>
+        <p>From the transcript annexure. Percentage equivalent is GPA × 10.</p>
+      </div>
+      <div class="card reveal">
+        <div class="scale-grid" id="scaleGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESOURCES ================= -->
+  <section class="section section-rule" id="resources">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="index-num">06</p>
+        <h2>Index of things I actually use</h2>
+        <p>Edit the list in <span class="mono">assets/data.js</span>.</p>
+      </div>
+      <div class="res-grid" id="resGrid"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p class="colophon">Set in Fraunces &amp; JetBrains Mono. Plain HTML, no build step.</p>
+    <p class="muted">Demo record · issued <span id="footDate">—</span></p>
+  </div>
+</footer>
+
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/data.js?v=4"></script>
+<script src="assets/app.js?v=4"></script>
+</body>
+</html>
