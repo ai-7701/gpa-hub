@@ -105,6 +105,13 @@ begin
   )
   on conflict (id) do nothing;
   return new;
+exception
+  -- the handle was already taken: still create the account, just without a handle
+  when unique_violation then
+    insert into public.profiles (id, display_name)
+    values (new.id, coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)))
+    on conflict (id) do nothing;
+    return new;
 end;
 $$;
 

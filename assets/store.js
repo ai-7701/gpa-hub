@@ -121,6 +121,19 @@
     }
   };
 
+  /* ---------- readable errors ---------- */
+  function friendly(msg) {
+    const m = String(msg || "");
+    if (/already registered|already been registered|User already exists/i.test(m)) return "That email already has an account — try signing in instead.";
+    if (/Database error saving new user/i.test(m)) return "That handle is already taken. Pick another one.";
+    if (/duplicate key|unique constraint/i.test(m)) return "That handle is already taken. Pick another one.";
+    if (/Invalid login credentials/i.test(m)) return "Wrong email or password.";
+    if (/Email not confirmed/i.test(m)) return "Confirm your email first, then sign in.";
+    if (/rate limit|too many requests|For security purposes/i.test(m)) return "Too many attempts — wait a minute and try again.";
+    if (/Failed to fetch|NetworkError/i.test(m)) return "Can't reach the server. Check your connection.";
+    return m || "Something went wrong.";
+  }
+
   /* ---------- supabase ---------- */
   function supabaseStore() {
     const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
@@ -141,7 +154,7 @@
           email, password,
           options: { data: { display_name: displayName, handle: h } }
         });
-        if (error) throw new Error(error.message);
+        if (error) throw new Error(friendly(error.message));
         if (data.user && !data.session) {
           throw new Error("Check your email to confirm the account, then sign in.");
         }
@@ -150,7 +163,7 @@
 
       async signIn({ email, password }) {
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw new Error(error.message);
+        if (error) throw new Error(friendly(error.message));
         return data.user;
       },
 
@@ -158,14 +171,14 @@
 
       async profile(userId) {
         const { data, error } = await sb.from("profiles").select("*").eq("id", userId).maybeSingle();
-        if (error) throw new Error(error.message);
+        if (error) throw new Error(friendly(error.message));
         return data;
       },
 
       async saveProfile(userId, patch) {
         if (patch.handle) patch.handle = patch.handle.toLowerCase().replace(/[^a-z0-9_-]/g, "");
         const { error } = await sb.from("profiles").update(patch).eq("id", userId);
-        if (error) throw new Error(error.message);
+        if (error) throw new Error(friendly(error.message));
         return patch;
       },
 
@@ -175,7 +188,7 @@
           .select("label, year, position, courses(code, name, credits, grade, position)")
           .eq("user_id", userId)
           .order("position", { ascending: true });
-        if (error) throw new Error(error.message);
+        if (error) throw new Error(friendly(error.message));
         return (data || []).map((s) => ({
           label: s.label,
           year: s.year,

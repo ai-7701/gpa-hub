@@ -14,6 +14,8 @@ shareable public profile. Plain HTML, CSS and JavaScript — no build step.
 
 ## Setting up accounts (Supabase)
 
+Full click-by-click guide: **[SETUP.md](SETUP.md)**.
+
 1. Create a project at [supabase.com](https://supabase.com) (free tier: 50,000 monthly users, 500 MB database).
 2. **SQL Editor → New query** → paste all of `supabase/schema.sql` → **Run**. This creates the tables,
    the row-level security policies and the trigger that makes a profile on signup.
