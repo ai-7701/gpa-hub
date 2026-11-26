@@ -216,7 +216,9 @@
       return;
     }
     if (window.STORE_MODE === "local" && S.view !== "public") {
-      text.innerHTML = "<strong>Demo mode</strong> — accounts and records stay in this browser only. Add your Supabase keys in <span class=\"mono\">assets/config.js</span> to go live.";
+      text.innerHTML = window.STORE_CONFIGURED
+        ? "<strong>Offline</strong> — the Supabase library didn't load, so you're in a local sandbox. Check your connection and reload."
+        : "<strong>Demo mode</strong> — accounts and records stay in this browser only. Add your Supabase keys in <span class=\"mono\">assets/config.js</span> to go live.";
       bar.hidden = false;
       return;
     }

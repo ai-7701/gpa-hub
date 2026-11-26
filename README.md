@@ -49,7 +49,8 @@ the read, so it is not just a hidden button.
 | `assets/styles.css` | The paper-and-ink design system |
 | `assets/app.js` | Rendering, calculator, gauge, chart, editor |
 | `assets/store.js` | Data layer: Supabase or the local sandbox |
-| `assets/config.js` | Your Supabase URL + anon key |
+| `assets/config.js` | Your Supabase URL + publishable key |
+| `assets/vendor/supabase.js` | supabase-js, self-hosted so a blocked CDN can't break the site |
 | `assets/data.js` | Demo record, grade scale, resource links |
 | `supabase/schema.sql` | Tables, policies, signup trigger |
 

@@ -8,7 +8,10 @@
   "use strict";
 
   const CFG = window.APP_CONFIG || {};
-  const LIVE = Boolean(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY);
+  const CONFIGURED = Boolean(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY);
+  // if the supabase-js script was blocked, degrade to the sandbox rather than break the page
+  const LIVE = CONFIGURED && Boolean(window.supabase && window.supabase.createClient);
+  if (CONFIGURED && !LIVE) console.error("Supabase keys are set but supabase-js did not load — falling back to demo mode.");
   const KEY = "gpahub.local.v1";
 
   const readLS = () => {
@@ -233,4 +236,5 @@
 
   window.Store = LIVE ? supabaseStore() : local;
   window.STORE_MODE = LIVE ? "supabase" : "local";
+  window.STORE_CONFIGURED = CONFIGURED;
 })();
