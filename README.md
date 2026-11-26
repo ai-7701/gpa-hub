@@ -53,6 +53,7 @@ the read, so it is not just a hidden button.
 | `assets/vendor/supabase.js` | supabase-js, self-hosted so a blocked CDN can't break the site |
 | `assets/data.js` | Demo record, grade scale, resource links |
 | `supabase/schema.sql` | Tables, policies, signup trigger |
+| `supabase/verify.sql` | One-query health check for the backend |
 
 ## Deploying
 
