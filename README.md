@@ -1,67 +1,76 @@
-# GPA Hub
+# GPA Ledger
 
-A single-page site with my semester GPA record, CGPA trend, a GPA calculator and a target planner.
-Plain HTML, CSS and JavaScript — no build step, no dependencies.
+A grade ledger for students: semester GPA, CGPA, a live GPA calculator, a target gauge, and a
+shareable public profile. Plain HTML, CSS and JavaScript — no build step.
 
-**Live site:** https://ai-7701.github.io/gpa-hub/
+**Live:** https://gpa-hub-chi.vercel.app
 
-## What's on the page
+## Two modes
 
-| Section | What it does |
+| Mode | When | What happens |
+| --- | --- | --- |
+| **Demo** | `assets/config.js` has no keys | Accounts and records live in the browser's localStorage. Everything works; nothing leaves the device. A banner says so. |
+| **Live** | `assets/config.js` has Supabase keys | Real accounts, records stored in Postgres, public profiles readable by anyone with the link. |
+
+## Setting up accounts (Supabase)
+
+1. Create a project at [supabase.com](https://supabase.com) (free tier: 50,000 monthly users, 500 MB database).
+2. **SQL Editor → New query** → paste all of `supabase/schema.sql` → **Run**. This creates the tables,
+   the row-level security policies and the trigger that makes a profile on signup.
+3. **Project Settings → API** → copy the **Project URL** and the **anon public** key.
+4. Paste both into `assets/config.js`.
+5. **Authentication → Providers → Email**: turn **Confirm email** off for the smoothest signup, or leave
+   it on and be aware the built-in mailer is limited to a few messages an hour — connect your own SMTP
+   for real traffic.
+6. Redeploy (any push does it).
+
+Never put the `service_role` key in the browser. The anon key is public by design; the RLS policies are
+what stop one student reading another's record.
+
+### Free-tier gotcha
+
+A free Supabase project **pauses after 7 days with no activity**. If that happens, the site falls back to
+the demo record. Either keep a free uptime monitor pinging the site daily, or move to Pro ($25/mo), which
+never pauses.
+
+## How privacy works
+
+Each record is private by default. In **Settings** you can switch on a public profile and pick a handle;
+the record is then readable at `?u=yourhandle`. Turning it off locks the link again — the database refuses
+the read, so it is not just a hidden button.
+
+## Files
+
+| File | Purpose |
 | --- | --- |
-| Hero | CGPA dial, credits earned, percentage, best SGPA |
-| Semester record | Every course with credits and grade, SGPA per semester |
-| Plotted by hand | Semester GPA vs CGPA on graph paper; hover or tap a point |
-| Work the numbers | Add courses, get SGPA live, and see the effect on CGPA |
-| The gauge | Drag target CGPA and credits; a needle shows the SGPA you need |
-| Grading scale | The university's letter grade to grade point table |
-| Index | Links, set as a table of contents |
-
-Light/dark theme follows the system setting and can be toggled; the choice is remembered.
-Calculator rows are saved in the browser's localStorage, so they survive a reload.
-The page prints as a clean transcript (the calculator and gauge are hidden in print).
-
-## Design notes
-
-The page is built as an academic ledger: paper, ink, stamped grade badges, a wax-style
-seal for the CGPA. Controls are inset wells; the only glass is nothing at all — depth comes
-from rules, hairlines and hard-edged buttons rather than blur.
-
-## Updating the data
-
-Everything shown is calculated from `assets/data.js`:
-
-- `PROFILE` — name, PRN, programme, school, transcript date
-- `GRADE_SCALE` — letter grades and their grade points
-- `SEMESTERS` — one object per semester, each with a list of courses
-- `RESOURCES` — the link groups at the bottom
-
-To add a semester, copy an existing block inside `SEMESTERS` and edit it. Nothing else needs changing.
-
-## The maths
-
-SGPA = Σ(credits × grade point) ÷ Σ(credits)
-CGPA = Σ(semester credits × semester GPA) ÷ Σ(semester credits)
-Percentage equivalent = GPA × 10
+| `index.html` | Markup, dialogs, sections |
+| `assets/styles.css` | The paper-and-ink design system |
+| `assets/app.js` | Rendering, calculator, gauge, chart, editor |
+| `assets/store.js` | Data layer: Supabase or the local sandbox |
+| `assets/config.js` | Your Supabase URL + anon key |
+| `assets/data.js` | Demo record, grade scale, resource links |
+| `supabase/schema.sql` | Tables, policies, signup trigger |
 
 ## Deploying
 
-The repo is static, so it deploys anywhere with no build step.
+Static site, no build command, no output directory.
 
-**Vercel** — import the repo at [vercel.com/new](https://vercel.com/new), pick `ai-7701/gpa-hub`,
-keep Framework Preset on **Other**, leave the build command and output directory empty, and press
-Deploy. `vercel.json` sets clean URLs and a few security headers. Every push to `main` redeploys.
-
-**GitHub Pages** — Settings → Pages → Deploy from a branch → `main` / `(root)`.
+- **Vercel** — import the repo at [vercel.com/new](https://vercel.com/new); `vercel.json` handles the rest.
+- **GitHub Pages** — Settings → Pages → Deploy from a branch → `main` / `(root)`.
 
 ## Running locally
-
-Open `index.html` in a browser, or serve the folder:
 
 ```bash
 python3 -m http.server 8000
 ```
 
+Then open http://localhost:8000 — the public-profile link (`?u=handle`) needs a server, not `file://`.
+
+## Design notes
+
+Paper, ink, stamped grade badges, a wax-style seal for the CGPA. Depth comes from rules and hairlines
+rather than blur; the only soft surfaces are the inset wells where you type.
+
 ## Credit
 
-The record shipped in `assets/data.js` is demo data. Replace it with your own.
+The record in `assets/data.js` is demo data. Replace it with your own, or sign up and use the editor.

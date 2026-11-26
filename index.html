@@ -16,9 +16,6 @@
     } catch (e) {}
   })();
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 <link rel="canonical" href="https://gpa-hub-chi.vercel.app/" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GPA Ledger" />
@@ -26,16 +23,19 @@
 <meta property="og:description" content="Track semester GPA, CGPA and a target gauge. A free grade ledger for students." />
 <meta property="og:url" content="https://gpa-hub-chi.vercel.app/" />
 <meta name="twitter:card" content="summary" />
-<link rel="stylesheet" href="assets/styles.css?v=4" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css?v=5" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%2314140f'/%3E%3Ctext x='50' y='70' font-size='56' font-family='Georgia' font-weight='bold' fill='%23f4efe4' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
 </head>
-<body>
+<body data-view="landing">
 
 <a class="skip" href="#semesters">Skip to the record</a>
 
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="#top">
+    <a class="brand" href="./">
       <span class="brand-mark">GPA</span>
       <span class="brand-text">Ledger</span>
     </a>
@@ -46,10 +46,9 @@
       <a href="#planner">Gauge</a>
       <a href="#resources">Index</a>
     </nav>
+    <div class="auth-area" id="authArea"></div>
     <button class="switch" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Dark mode">
-      <span class="switch-track">
-        <span class="switch-knob"></span>
-      </span>
+      <span class="switch-track"><span class="switch-knob"></span></span>
     </button>
   </div>
 </header>
@@ -63,20 +62,24 @@
   <a href="#resources" data-rail="resources"><i></i><span>Index</span></a>
 </nav>
 
+<div class="banner" id="demoBanner" hidden>
+  <div class="wrap banner-inner">
+    <p id="bannerText"></p>
+    <button class="btn btn-quiet btn-sm" id="bannerAction" type="button" hidden></button>
+  </div>
+</div>
+
 <main id="top">
 
   <!-- ================= HERO ================= -->
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <p class="kicker">Academic record · PRN <span class="mono" id="heroPrn">000000000</span></p>
+        <p class="kicker" id="heroKicker">Academic record · PRN <span class="mono" id="heroPrn">000000000</span></p>
         <h1 id="heroName">Sample Student</h1>
         <p class="lede"><span id="heroProg">BTech</span>, <span id="heroSchool">School of Computing and Data Science</span>. <span id="heroUni">Your University</span>.</p>
-        <p class="hero-note">Two semesters on file, issued <strong id="heroDate">—</strong>. Every figure below is computed from the course list in the record — nothing is typed in twice.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#calculator">Open the calculator</a>
-          <button class="btn btn-ghost" id="printBtn" type="button">Print transcript</button>
-        </div>
+        <p class="hero-note" id="heroNote">Two semesters on file, issued <strong id="heroDate">—</strong>. Every figure below is computed from the course list in the record — nothing is typed in twice.</p>
+        <div class="hero-actions" id="heroActions"></div>
       </div>
 
       <div class="seal-wrap reveal">
@@ -90,7 +93,7 @@
             <circle class="seal-track" cx="110" cy="110" r="72" />
             <circle class="seal-fill" id="ringFill" cx="110" cy="110" r="72" />
             <text class="seal-text">
-              <textPath href="#sealArc" startOffset="0">SAI UNIVERSITY · SCHOOL OF COMPUTING · SEMESTER RECORD · CGPA ·</textPath>
+              <textPath href="#sealArc" startOffset="0" id="sealText">GPA LEDGER · SEMESTER RECORD · CGPA ·</textPath>
             </text>
           </svg>
           <div class="seal-center">
@@ -131,10 +134,26 @@
     <div class="wrap">
       <div class="section-head reveal">
         <p class="index-num">01</p>
-        <h2>The record</h2>
-        <p>Weighted by credits, using the university's own SGPA formula.</p>
+        <h2 id="recordTitle">The record</h2>
+        <p id="recordSub">Weighted by credits, using the university's own SGPA formula.</p>
       </div>
+
+      <div class="edit-bar" id="editBar" hidden>
+        <p class="edit-note" id="editNote">Editing — nothing is saved until you press Save.</p>
+        <div class="edit-actions">
+          <button class="btn btn-ghost btn-sm" id="addSemester" type="button">+ Semester</button>
+          <button class="btn btn-quiet btn-sm" id="cancelEdit" type="button">Cancel</button>
+          <button class="btn btn-primary btn-sm" id="saveEdit" type="button">Save changes</button>
+        </div>
+      </div>
+
       <div class="sem-grid" id="semGrid"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <h3>No semesters yet</h3>
+        <p>Add your first semester and the CGPA, chart and gauge fill themselves in.</p>
+        <button class="btn btn-primary" id="emptyAdd" type="button">Add a semester</button>
+      </div>
     </div>
   </section>
 
@@ -263,7 +282,7 @@
           <div class="divider"></div>
           <p class="result-label">Best possible</p>
           <p class="result-mid" id="bestCgpa">—</p>
-          <p class="result-sub">With a perfect 10.00 next semester. <span id="plannerBase">40 credits · 372 points</span></p>
+          <p class="result-sub">With a perfect 10.00 next semester. <span id="plannerBase">0 credits · 0 points</span></p>
         </div>
       </div>
     </div>
@@ -300,14 +319,75 @@
 <footer class="footer">
   <div class="wrap footer-inner">
     <p class="colophon">Set in Fraunces &amp; JetBrains Mono. Plain HTML, no build step.</p>
-    <p class="muted">Demo record · issued <span id="footDate">—</span></p>
+    <p class="muted" id="footStatus">Demo record</p>
   </div>
 </footer>
+
+<!-- ================= AUTH DIALOG ================= -->
+<dialog id="authDialog" class="dialog">
+  <form id="authForm" class="dialog-inner" novalidate>
+    <button type="button" class="dialog-close" data-close aria-label="Close">&times;</button>
+    <p class="index-num">Account</p>
+    <h2 id="authTitle">Sign in</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab is-on" data-tab="in" role="tab" aria-selected="true">Sign in</button>
+      <button type="button" class="tab" data-tab="up" role="tab" aria-selected="false">Create account</button>
+    </div>
+
+    <div id="signupOnly" hidden>
+      <label class="field"><span>Display name</span>
+        <input id="authName" type="text" autocomplete="name" placeholder="Audi" />
+      </label>
+      <label class="field"><span>Handle — your public link</span>
+        <input id="authHandle" type="text" autocomplete="username" placeholder="audi" />
+      </label>
+    </div>
+
+    <label class="field"><span>Email</span>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="you@college.edu" required />
+    </label>
+    <label class="field"><span>Password</span>
+      <input id="authPass" type="password" autocomplete="current-password" placeholder="At least 6 characters" required />
+    </label>
+
+    <p class="form-error" id="authError" role="alert"></p>
+    <button class="btn btn-primary btn-block" id="authSubmit" type="submit">Sign in</button>
+    <p class="hint" id="authHint"></p>
+  </form>
+</dialog>
+
+<!-- ================= SETTINGS DIALOG ================= -->
+<dialog id="settingsDialog" class="dialog">
+  <form id="settingsForm" class="dialog-inner" novalidate>
+    <button type="button" class="dialog-close" data-close aria-label="Close">&times;</button>
+    <p class="index-num">Settings</p>
+    <h2>Your details</h2>
+
+    <label class="field"><span>Display name</span><input id="setName" type="text" /></label>
+    <label class="field"><span>Handle</span><input id="setHandle" type="text" /></label>
+    <label class="field"><span>Programme</span><input id="setProg" type="text" placeholder="BTech" /></label>
+    <label class="field"><span>School</span><input id="setSchool" type="text" /></label>
+    <label class="field"><span>University</span><input id="setUni" type="text" /></label>
+
+    <label class="check">
+      <input type="checkbox" id="setPublic" />
+      <span><strong>Public profile</strong><br />Anyone with the link can read your record.</span>
+    </label>
+    <p class="hint" id="publicLink"></p>
+
+    <p class="form-error" id="setError" role="alert"></p>
+    <button class="btn btn-primary btn-block" type="submit">Save details</button>
+    <button class="btn btn-ghost btn-block" id="signOutBtn" type="button">Sign out</button>
+  </form>
+</dialog>
 
 <div class="tip" id="tip" hidden></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/data.js?v=4"></script>
-<script src="assets/app.js?v=4"></script>
+<script src="assets/config.js?v=5"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/data.js?v=5"></script>
+<script src="assets/store.js?v=5"></script>
+<script src="assets/app.js?v=5"></script>
 </body>
 </html>
